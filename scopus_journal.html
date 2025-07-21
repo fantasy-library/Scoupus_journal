@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Institutional Journal Information Lookup</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #0f1b3a, #1e3b5a, #0d2b52);
+            color: #f0f8ff;
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            font-size: 3rem;
+            color: #4dabf7;
+            margin-bottom: 15px;
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #4dabf7, #3bc9db);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.85;
+            max-width: 600px;
+            margin: 0 auto 20px;
+            color: #c5f3ff;
+        }
+        
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .search-section {
+            padding: 30px;
+            background: rgba(0, 20, 40, 0.4);
+        }
+        
+        .input-container {
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .input-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .input-label {
+            font-size: 1.1rem;
+            color: #a5d8ff;
+        }
+        
+        .counter {
+            background: rgba(77, 171, 247, 0.2);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.9rem;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 18px 25px;
+            font-size: 1.1rem;
+            border: none;
+            outline: none;
+            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            transition: all 0.3s;
+            border-radius: 12px;
+            resize: vertical;
+            margin-bottom: 15px;
+        }
+        
+        textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        
+        textarea:focus {
+            background: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 0 0 2px #4dabf7;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            background: linear-gradient(90deg, #4dabf7, #3bc9db);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+            flex: 1;
+            min-width: 200px;
+            justify-content: center;
+        }
+        
+        button:hover {
+            background: linear-gradient(90deg, #3b9ce0, #2bb4c4);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 156, 224, 0.4);
+        }
+        
+        .btn-clear {
+            background: rgba(231, 76, 60, 0.2);
+        }
+        
+        .btn-clear:hover {
+            background: rgba(231, 76, 60, 0.3);
+        }
+        
+        .btn-stop {
+            background: rgba(255, 173, 51, 0.2);
+        }
+        
+        .btn-stop:hover {
+            background: rgba(255, 173, 51, 0.3);
+        }
+        
+        .btn-download {
+            background: linear-gradient(90deg, #4CAF50, #2E7D32);
+        }
+        
+        .btn-download:hover {
+            background: linear-gradient(90deg, #388E3C, #1B5E20);
+        }
+        
+        .instructions {
+            margin-top: 20px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+            margin: 10px 0;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .results-section {
+            padding: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #da77f2, #ffa94d);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .download-container {
+            text-align: center;
+            margin: 25px 0;
+        }
+        
+        .status-container {
+            background: rgba(0, 30, 60, 0.4);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .status-icon.success {
+            color: #4CAF50;
+        }
+        
+        .status-icon.error {
+            color: #ff8787;
+        }
+        
+        .status-title {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: #4dabf7;
+        }
+        
+        .status-message {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #c5f3ff;
+        }
+        
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            background: rgba(0, 20, 40, 0.4);
+            border-radius: 12px;
+            padding: 18px;
+            min-width: 150px;
+            border: 1px solid rgba(77, 171, 247, 0.2);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-success {
+            color: #4CAF50;
+        }
+        
+        .stat-error {
+            color: #ff8787;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #a5d8ff;
+        }
+        
+        .issn-example {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 5px 12px;
+            border-radius: 6px;
+            margin: 0 5px;
+            font-family: monospace;
+        }
+        
+        .searching-indicator {
+            text-align: center;
+            padding: 50px 30px;
+            color: #a5d8ff;
+            font-size: 1.3rem;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.1);
+            border-top: 4px solid #4dabf7;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.2s linear infinite;
+            margin: 30px auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .examples {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .example-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 8px;
+            padding: 8px 16px;
+            color: #a5d8ff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .example-btn:hover {
+            background: rgba(77, 171, 247, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .api-status {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            color: #74c0fc;
+        }
+        
+        .api-status.error {
+            color: #ff8787;
+        }
+        
+        .validation-note {
+            text-align: center;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #a5d8ff;
+        }
+        
+        .progress-container {
+            background: rgba(0, 30, 60, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4dabf7, #3bc9db);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #a5d8ff;
+        }
+        
+        .result-counter {
+            margin-top: 15px;
+            color: #a5d8ff;
+            font-size: 0.9rem;
+        }
+        
+        .rate-limit-warning {
+            background: rgba(255, 173, 51, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 173, 51, 0.3);
+            text-align: center;
+        }
+        
+        .institution-badge {
+            background: rgba(123, 97, 255, 0.2);
+            border-radius: 8px;
+            padding: 10px 15px;
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            padding: 40px 0 20px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .button-group {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+            
+            .summary-stats {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-book-open"></i>
+            </div>
+            <h1>Institutional Journal Lookup</h1>
+            <p class="subtitle">Access comprehensive journal details through your institution's API credentials</p>
+        </header>
+        
+        <div class="card search-section">
+            <div class="input-container">
+                <div class="input-header">
+                    <div class="input-label">Enter ISSN Numbers (one per line)</div>
+                    <div class="counter">Rate Limit: <span id="rateLimit">100</span>/min</div>
+                </div>
+                
+                <textarea id="issnInput" placeholder="Enter ISSNs (e.g., 2161-797X, 1755-0645, 1468-2621)">2161-797X
+1755-0645
+1468-2621</textarea>
+                
+                <div class="button-group">
+                    <button id="searchBtn">
+                        <i class="fas fa-search"></i> Search Journals
+                    </button>
+                    <button id="stopBtn" class="btn-stop">
+                        <i class="fas fa-stop"></i> Stop Search
+                    </button>
+                    <button id="clearBtn" class="btn-clear">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+                
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-text">
+                        <span>Processing</span>
+                        <span id="progressText">0/0</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="result-counter">
+                        Results: <span id="resultCount">0</span> | Errors: <span id="errorCount">0</span>
+                    </div>
+                </div>
+                
+                <div class="institution-badge">
+                    <i class="fas fa-university"></i>
+                    <span>Using Institutional API Access</span>
+                </div>
+                
+                <div class="rate-limit-warning">
+                    <i class="fas fa-info-circle"></i> API rate limited to 100 requests per minute. Large lists will be processed with delays.
+                </div>
+                
+                <div class="instructions">
+                    <p><strong>Instructions:</strong></p>
+                    <ul>
+                        <li>Enter one ISSN per line (with or without hyphens)</li>
+                        <li>Valid ISSN format: 7 digits + 1 digit or 'X' (e.g., 2161-797X or 17550645)</li>
+                        <li>Supports multiple ISSNs - up to 100 per minute</li>
+                        <li>Results will be collected and can be exported to Excel</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card results-section">
+            <div class="results-header">
+                <h2><i class="fas fa-file-alt"></i> Journal Results</h2>
+                <div class="counter">Found: <span id="resultsCounter">0</span></div>
+            </div>
+            
+            <div id="resultsContainer">
+                <div class="no-results">
+                    <i class="fas fa-search"></i>
+                    <p>Enter ISSNs and click "Search Journals" to retrieve information</p>
+                </div>
+            </div>
+            
+            <div class="download-container" id="downloadContainer" style="display: none;">
+                <button id="downloadBtn" class="btn-download">
+                    <i class="fas fa-file-excel"></i> Download Excel File
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Institutional Journal Data Lookup | Powered by Elsevier API</p>
+            <p style="margin-top: 10px; font-size: 0.8rem;">Secure access using institutional API credentials</p>
+        </footer>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchBtn = document.getElementById('searchBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const clearBtn = document.getElementById('clearBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const issnInput = document.getElementById('issnInput');
+            const resultsContainer = document.getElementById('resultsContainer');
+            const progressContainer = document.getElementById('progressContainer');
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+            const resultCountElem = document.getElementById('resultCount');
+            const errorCountElem = document.getElementById('errorCount');
+            const resultsCounter = document.getElementById('resultsCounter');
+            const rateLimitElem = document.getElementById('rateLimit');
+            const downloadContainer = document.getElementById('downloadContainer');
+            
+            // API configuration with institutional credentials
+            const API_KEY = '09d5b33d411568b6b4ab4c97f9afffd6';
+            const INST_TOKEN = '0549001e2df9365ea14324bd84d26beb';
+            const BASE_URL = 'https://api.elsevier.com/content/serial/title/issn/';
+            const RATE_LIMIT = 100; // Requests per minute
+            const RATE_INTERVAL = 60000; // 60 seconds in ms
+            
+            // State management
+            let issnQueue = [];
+            let processing = false;
+            let resultsCount = 0;
+            let errorsCount = 0;
+            let processedCount = 0;
+            let totalToProcess = 0;
+            let searchStopped = false;
+            let requestTimes = [];
+            let allJournalData = [];
+            
+            // Function to validate and normalize ISSN
+            function normalizeISSN(issn) {
+                // Remove hyphens and whitespace, convert to uppercase
+                const cleanISSN = issn.replace(/[-\s]/g, '').toUpperCase();
+                
+                // ISSN must be 8 characters long
+                if (cleanISSN.length !== 8) {
+                    return null;
+                }
+                
+                // First 7 characters must be digits
+                for (let i = 0; i < 7; i++) {
+                    if (isNaN(parseInt(cleanISSN[i]))) {
+                        return null;
+                    }
+                }
+                
+                // Last character must be a digit or 'X'
+                const lastChar = cleanISSN[7];
+                if (!(lastChar === 'X' || !isNaN(parseInt(lastChar)))) {
+                    return null;
+                }
+                
+                return cleanISSN;
+            }
+            
+            // Function to fetch journal data from API with institutional credentials
+            function fetchJournalData(issn) {
+                const url = `${BASE_URL}${issn}?apiKey=${API_KEY}&insttoken=${INST_TOKEN}&httpAccept=application%2Fjson`;
+                
+                return fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('API response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Check if we have valid data
+                        if (data && data['serial-metadata-response'] && 
+                            data['serial-metadata-response'].entry && 
+                            data['serial-metadata-response'].entry.length > 0) {
+                            return data['serial-metadata-response'].entry[0];
+                        } else {
+                            throw new Error('No journal data found');
+                        }
+                    });
+            }
+            
+            // Function to collect journal data
+            function collectJournalData(data, issn) {
+                // Extract subject areas
+                const subjectAreas = data['subject-area'] 
+                    ? data['subject-area'].map(subject => subject['$']) 
+                    : [];
+                
+                // Extract metrics
+                const snip = data.SNIPList?.SNIP?.[0]?.['$'] || 'N/A';
+                const snipYear = data.SNIPList?.SNIP?.[0]?.['@year'] || 'N/A';
+                const sjr = data.SJRList?.SJR?.[0]?.['$'] || 'N/A';
+                const sjrYear = data.SJRList?.SJR?.[0]?.['@year'] || 'N/A';
+                const citeScore = data.citeScoreYearInfoList?.citeScoreCurrentMetric || 'N/A';
+                const citeScoreYear = data.citeScoreYearInfoList?.citeScoreCurrentMetricYear || 'N/A';
+                
+                return {
+                    title: data['dc:title'] || 'N/A',
+                    publisher: data['dc:publisher'] || 'N/A',
+                    printISSN: data['prism:issn'] || 'N/A',
+                    eISSN: data['prism:eIssn'] || 'N/A',
+                    citeScore: citeScore,
+                    citeScoreYear: citeScoreYear,
+                    snip: snip,
+                    snipYear: snipYear,
+                    sjr: sjr,
+                    sjrYear: sjrYear,
+                    startYear: data.coverageStartYear || 'N/A',
+                    endYear: data.coverageEndYear || 'N/A',
+                    subjectAreas: subjectAreas.join('; '),
+                    sourceID: data['source-id'] || 'N/A',
+                    aggregationType: data['prism:aggregationType'] || 'N/A',
+                    issn: issn,
+                    status: 'success'
+                };
+            }
+            
+            // Function to generate Excel file
+            function generateExcelFile() {
+                // Prepare data for Excel
+                const excelData = allJournalData.map(journal => ({
+                    'Journal Title': journal.title,
+                    'Publisher': journal.publisher,
+                    'Print ISSN': journal.printISSN,
+                    'eISSN': journal.eISSN,
+                    'CiteScore': journal.citeScore,
+                    'CiteScore Year': journal.citeScoreYear,
+                    'SNIP': journal.snip,
+                    'SNIP Year': journal.snipYear,
+                    'SJR': journal.sjr,
+                    'SJR Year': journal.sjrYear,
+                    'Start Year': journal.startYear,
+                    'End Year': journal.endYear,
+                    'Subject Areas': journal.subjectAreas,
+                    'Source ID': journal.sourceID,
+                    'Aggregation Type': journal.aggregationType,
+                    'ISSN': journal.issn,
+                    'Status': journal.status
+                }));
+                
+                // Create worksheet
+                const ws = XLSX.utils.json_to_sheet(excelData);
+                
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Journal Data");
+                
+                // Generate file and trigger download
+                const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+                const blob = new Blob([s2ab(wbout)], { type: "application/octet-stream" });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "journal_data.xlsx";
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => {
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                }, 0);
+            }
+            
+            // Helper function for Excel generation
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xFF;
+                return buf;
+            }
+            
+            // Function to show success message after processing
+            function showSuccessMessage() {
+                const successCount = resultsCount - errorsCount;
+                
+                const html = `
+                    <div class="status-container">
+                        <div class="status-icon success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 class="status-title">Processing Complete</h3>
+                        <p class="status-message">Successfully retrieved journal information for ${resultsCount} ISSNs</p>
+                        
+                        <div class="summary-stats">
+                            <div class="stat-item">
+                                <div class="stat-value stat-success">${successCount}</div>
+                                <div class="stat-label">Successful</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value stat-error">${errorsCount}</div>
+                                <div class="stat-label">Errors</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value">${resultsCount}</div>
+                                <div class="stat-label">Total</div>
+                            </div>
+                        </div>
+                        
+                        <p style="margin-top: 25px; color: #a5d8ff;">
+                            Click the download button below to export the data to Excel
+                        </p>
+                    </div>
+                `;
+                
+                resultsContainer.innerHTML = html;
+                downloadContainer.style.display = 'block';
+            }
+            
+            // Function to show no results for specific ISSN
+            function processError(issn, errorType) {
+                allJournalData.push({
+                    title: errorType === 'not_found' ? 'No Journal Found' : 'API Error',
+                    publisher: errorType === 'not_found' ? 'ISSN not found in database' : 'API request failed',
+                    printISSN: issn,
+                    eISSN: '',
+                    citeScore: '',
+                    citeScoreYear: '',
+                    snip: '',
+                    snipYear: '',
+                    sjr: '',
+                    sjrYear: '',
+                    startYear: '',
+                    endYear: '',
+                    subjectAreas: '',
+                    sourceID: '',
+                    aggregationType: '',
+                    issn: issn,
+                    status: errorType === 'not_found' ? 'Not found' : 'Error'
+                });
+                
+                errorsCount++;
+                errorCountElem.textContent = errorsCount;
+                resultsCount++;
+                resultsCounter.textContent = resultsCount;
+            }
+            
+            // Function to process the queue
+            async function processQueue() {
+                if (searchStopped) {
+                    processing = false;
+                    return;
+                }
+                
+                if (issnQueue.length === 0) {
+                    processing = false;
+                    showSuccessMessage();
+                    return;
+                }
+                
+                processing = true;
+                
+                // Check rate limit
+                const now = Date.now();
+                requestTimes = requestTimes.filter(time => now - time < RATE_INTERVAL);
+                
+                if (requestTimes.length >= RATE_LIMIT) {
+                    // We've reached the rate limit, wait before proceeding
+                    const oldest = requestTimes[0];
+                    const waitTime = RATE_INTERVAL - (now - oldest);
+                    
+                    // Update progress text
+                    progressText.textContent = `Rate limited: waiting ${Math.ceil(waitTime/1000)}s`;
+                    
+                    await new Promise(resolve => setTimeout(resolve, waitTime + 100));
+                    return processQueue();
+                }
+                
+                // Get next ISSN from queue
+                const issn = issnQueue.shift();
+                
+                // Record the request time
+                requestTimes.push(Date.now());
+                
+                try {
+                    const data = await fetchJournalData(issn);
+                    const journalData = collectJournalData(data, issn);
+                    allJournalData.push(journalData);
+                    resultsCount++;
+                    resultCountElem.textContent = resultsCount;
+                } catch (error) {
+                    if (error.message === 'No journal data found') {
+                        processError(issn, 'not_found');
+                    } else {
+                        processError(issn, 'api_error');
+                    }
+                }
+                
+                // Update progress
+                processedCount++;
+                const progress = Math.round((processedCount / totalToProcess) * 100);
+                progressFill.style.width = `${progress}%`;
+                progressText.textContent = `${processedCount}/${totalToProcess}`;
+                resultsCounter.textContent = resultsCount;
+                
+                // Process next item in queue
+                setTimeout(processQueue, 100);
+            }
+            
+            // Search button event handler
+            searchBtn.addEventListener('click', function() {
+                // Reset state
+                searchStopped = false;
+                issnQueue = [];
+                allJournalData = [];
+                resultsCount = 0;
+                errorsCount = 0;
+                processedCount = 0;
+                resultsContainer.innerHTML = '';
+                resultsCounter.textContent = '0';
+                downloadContainer.style.display = 'none';
+                
+                // Get input and split by lines
+                const inputText = issnInput.value.trim();
+                if (!inputText) {
+                    alert('Please enter at least one ISSN');
+                    return;
+                }
+                
+                const inputLines = inputText.split('\n');
+                totalToProcess = 0;
+                
+                // Process each line
+                inputLines.forEach(line => {
+                    const issn = line.trim();
+                    if (issn) {
+                        const normalized = normalizeISSN(issn);
+                        if (normalized) {
+                            issnQueue.push(normalized);
+                            totalToProcess++;
+                        }
+                    }
+                });
+                
+                if (issnQueue.length === 0) {
+                    alert('No valid ISSNs found. Please check your input.');
+                    return;
+                }
+                
+                // Show progress
+                progressContainer.style.display = 'block';
+                progressFill.style.width = '0%';
+                progressText.textContent = `0/${totalToProcess}`;
+                resultCountElem.textContent = '0';
+                errorCountElem.textContent = '0';
+                
+                // Show processing message
+                resultsContainer.innerHTML = `
+                    <div class="searching-indicator">
+                        <div class="spinner"></div>
+                        <p>Processing ${totalToProcess} ISSNs...</p>
+                        <p>This may take a few moments</p>
+                    </div>
+                `;
+                
+                // Start processing
+                processQueue();
+            });
+            
+            // Stop button event handler
+            stopBtn.addEventListener('click', function() {
+                searchStopped = true;
+                issnQueue = [];
+                if (resultsCount > 0) {
+                    showSuccessMessage();
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="no-results">
+                            <i class="fas fa-stop-circle"></i>
+                            <p>Processing stopped by user</p>
+                        </div>
+                    `;
+                }
+            });
+            
+            // Clear button event handler
+            clearBtn.addEventListener('click', function() {
+                searchStopped = true;
+                issnQueue = [];
+                allJournalData = [];
+                issnInput.value = '';
+                resultsContainer.innerHTML = '<div class="no-results"><i class="fas fa-search"></i><p>Enter ISSNs and click "Search Journals" to retrieve information</p></div>';
+                resultsCounter.textContent = '0';
+                progressContainer.style.display = 'none';
+                downloadContainer.style.display = 'none';
+            });
+            
+            // Download button event handler
+            downloadBtn.addEventListener('click', generateExcelFile);
+            
+            // Initialize rate limit display
+            rateLimitElem.textContent = RATE_LIMIT;
+        });
+    </script>
+</body>
+</html>
